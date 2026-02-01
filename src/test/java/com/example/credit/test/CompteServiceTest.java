@@ -73,8 +73,11 @@ public class CompteServiceTest {
     public void testUpdateCompte_Success() {
         Compte compte = new Compte();
         compte.setId(5L);
+        compte.setDocuments(new java.util.ArrayList<>());
+        compte.setDc(null);
 
         when(compteRepository.existsById(5L)).thenReturn(true);
+        when(compteRepository.findById(5L)).thenReturn(Optional.of(compte));
 
         compteService.updateCompte(compte);
 

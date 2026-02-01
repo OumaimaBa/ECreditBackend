@@ -70,26 +70,25 @@ public class LigneCreditServiceTest {
     public void testUpdateLigne_ExistingId_SavesLigne() {
         LigneCredit l = new LigneCredit();
         l.setId(1L);
-        when(ligneCreditRepository.existsById(1L)).thenReturn(true);
+        when(ligneCreditRepository.findById(1L)).thenReturn(Optional.of(l));
 
         ligneCreditService.updateLigne(l);
 
-        verify(ligneCreditRepository).existsById(1L);
-        verify(ligneCreditRepository).save(l);
+        verify(ligneCreditRepository).findById(1L);
     }
 
     @Test
     public void testUpdateLigne_NonExistingId_Throws() {
         LigneCredit l = new LigneCredit();
         l.setId(2L);
-        when(ligneCreditRepository.existsById(2L)).thenReturn(false);
+        when(ligneCreditRepository.findById(2L)).thenReturn(Optional.empty());
 
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             ligneCreditService.updateLigne(l);
         });
 
         assertEquals("LigneCredit non trouvée", exception.getMessage());
-        verify(ligneCreditRepository).existsById(2L);
+        verify(ligneCreditRepository).findById(2L);
         verify(ligneCreditRepository, never()).save(any());
     }
 

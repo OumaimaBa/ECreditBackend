@@ -4,7 +4,7 @@ import com.example.credit.model.Compte;
 import com.example.credit.model.DossierCredit;
 import com.example.credit.repository.CompteRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.stereotype.Service;
 

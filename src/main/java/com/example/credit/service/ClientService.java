@@ -13,7 +13,7 @@ import com.example.credit.model.Document;
 import com.example.credit.model.Gerant;
 import com.example.credit.repository.ClientRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ClientService {

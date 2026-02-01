@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.credit.model.Client;
 import com.example.credit.service.ClientService;
 
-import jakarta.websocket.server.PathParam;
-
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -47,7 +46,7 @@ public class ClientController {
     }
 
     @DeleteMapping
-    public void removeClient(@PathParam(value = "id") Long id){
+    public void removeClient(@RequestParam("id") Long id){
         this.clientService.deleteClient(id);
     }
 

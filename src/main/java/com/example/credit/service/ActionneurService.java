@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import com.example.credit.model.Actionneur;
 import com.example.credit.repository.ActionneurRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 @Transactional
 @Service

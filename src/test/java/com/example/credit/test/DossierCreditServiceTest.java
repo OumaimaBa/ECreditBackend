@@ -17,14 +17,14 @@ import static org.mockito.Mockito.*;
 public class DossierCreditServiceTest {
 
     private DossierCreditRepository dossierCreditRepository;
+    private CompteRepository compteRepository;
     private DossierCreditService dossierCreditService;
 
     @BeforeEach
     public void setUp() {
-        
         dossierCreditRepository = mock(DossierCreditRepository.class);
-        CompteRepository compteRepository= mock(CompteRepository.class);
-        dossierCreditService = new DossierCreditService(dossierCreditRepository,compteRepository);
+        compteRepository = mock(CompteRepository.class);
+        dossierCreditService = new DossierCreditService(dossierCreditRepository, compteRepository);
     }
 
     @Test
@@ -71,28 +71,37 @@ public class DossierCreditServiceTest {
 
     @Test
     public void testUpdateDossier_ExistingId_SavesDossier() {
+        com.example.credit.model.Compte c = new com.example.credit.model.Compte();
+        c.setId(1L);
+
         DossierCredit d = new DossierCredit();
         d.setId(1L);
-        when(dossierCreditRepository.existsById(1L)).thenReturn(true);
+        d.setCompte(c);
+
+        DossierCredit existingD = new DossierCredit();
+        existingD.setId(1L);
+
+        when(dossierCreditRepository.findById(1L)).thenReturn(Optional.of(existingD));
+        when(compteRepository.findById(1L)).thenReturn(Optional.of(c));
 
         dossierCreditService.updateDossier(d);
 
-        verify(dossierCreditRepository).existsById(1L);
-        verify(dossierCreditRepository).save(d);
+        verify(dossierCreditRepository).findById(1L);
+        verify(dossierCreditRepository).save(existingD);
     }
 
     @Test
     public void testUpdateDossier_NonExistingId_Throws() {
         DossierCredit d = new DossierCredit();
         d.setId(2L);
-        when(dossierCreditRepository.existsById(2L)).thenReturn(false);
+        when(dossierCreditRepository.findById(2L)).thenReturn(Optional.empty());
 
         IllegalStateException exception = assertThrows(IllegalStateException.class, () -> {
             dossierCreditService.updateDossier(d);
         });
 
         assertEquals("DossierCredit non trouvé", exception.getMessage());
-        verify(dossierCreditRepository).existsById(2L);
+        verify(dossierCreditRepository).findById(2L);
         verify(dossierCreditRepository, never()).save(any());
     }
 

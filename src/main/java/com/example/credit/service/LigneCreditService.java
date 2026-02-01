@@ -3,7 +3,7 @@ package com.example.credit.service;
 import com.example.credit.model.LigneCredit;
 import com.example.credit.repository.LigneCreditRepository;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import org.springframework.stereotype.Service;
 
