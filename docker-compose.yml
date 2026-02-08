@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # Application Spring Boot (H2 embarquée, pas besoin de MySQL)
   ecredit-backend:
-    image: oumaimaba/ecredit-backend:${IMAGE_TAG:-latest}
+    image: umaimaba/ecredit-backend:${IMAGE_TAG:-latest}
     container_name: ecredit-backend-app
     ports:
       - "8085:8080"
