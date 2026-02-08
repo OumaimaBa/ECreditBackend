@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  backend:
+    image: oumaimaba/ecredit-backend:0.0.1-SNAPSHOT
+    container_name: ecredit-backend-app
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
