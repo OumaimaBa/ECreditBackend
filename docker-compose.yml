@@ -1,4 +1,5 @@
 version: '3.8'
+
 services:
   backend:
     image: oumaimaba/ecredit-backend:0.0.1-SNAPSHOT
