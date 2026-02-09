@@ -1,85 +1,52 @@
 version: "3.8"
 
 services:
-  # Application Spring Boot
+  # ============================================
+  # APPLICATION (OBLIGATOIRE)
+  # ============================================
+  
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-ecredit
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=ecredit
+      - MYSQL_USER=ecredituser
+      - MYSQL_PASSWORD=ecreditpass
+    volumes:
+      - mysql-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - ecredit-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   ecredit-backend:
     build:
       context: .
       dockerfile: Dockerfile
+    image: umaimaba/ecredit-backend:latest
     container_name: ecredit-backend-app
+    depends_on:
+      - mysql
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-ecredit:3306/ecredit
+      - SPRING_DATASOURCE_USERNAME=ecredituser
+      - SPRING_DATASOURCE_PASSWORD=ecreditpass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "8085:8080"
-    environment:
-      SPRING_PROFILES_ACTIVE: default
-      SERVER_PORT: 8080
-    volumes:
-      - ./src/main/resources/application.properties:/app/config/application.properties:ro
     networks:
       - ecredit-network
-    restart: unless-stopped
 
-  # Jenkins
-  jenkins:
-    image: jenkins/jenkins:lts
-    container_name: docker_jenkins_1
-    user: root
-    ports:
-      - "8082:8080"
-      - "50000:50000"
-    volumes:
-      - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
-      - /usr/bin/docker:/usr/bin/docker:ro
-    environment:
-      - DOCKER_HOST=unix:///var/run/docker.sock
-      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
-    networks:
-      - ecredit-network
-    restart: unless-stopped
-
-  # Nexus
-  nexus:
-    image: sonatype/nexus3
-    container_name: nexus
-    ports:
-      - "8081:8081"
-    volumes:
-      - nexus-data:/nexus-data
-    networks:
-      - ecredit-network
-    restart: unless-stopped
-
-  # SonarQube
-  sonarqube:
-    image: sonarqube:latest
-    container_name: sonarqube
-    ports:
-      - "9000:9000"
-    environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
-      - SONAR_JDBC_USERNAME=sonar
-      - SONAR_JDBC_PASSWORD=sonar
-    depends_on:
-      - sonarqube-db
-    networks:
-      - ecredit-network
-    restart: unless-stopped
-
-  # PostgreSQL pour SonarQube
-  sonarqube-db:
-    image: postgres:15
-    container_name: sonarqube-database
-    environment:
-      - POSTGRES_USER=sonar
-      - POSTGRES_PASSWORD=sonar
-      - POSTGRES_DB=sonar
-    volumes:
-      - sonarqube-db-data:/var/lib/postgresql/data
-    networks:
-      - ecredit-network
-    restart: unless-stopped
-
-  # Prometheus
+  # ============================================
+  # MONITORING (OBLIGATOIRE)
+  # ============================================
+  
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -89,24 +56,21 @@ services:
       - "9090:9090"
     networks:
       - ecredit-network
-    restart: unless-stopped
 
-  # Grafana
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
       - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
       - ecredit-network
     depends_on:
       - prometheus
-    restart: unless-stopped
 
 volumes:
-  jenkins_home:
-  nexus-data:
-  sonarqube-db-data:
+  mysql-data:
 
 networks:
   ecredit-network:
