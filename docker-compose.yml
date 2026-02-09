@@ -1,18 +1,73 @@
-version: '3.8'
-
 services:
   # Application Spring Boot
   ecredit-backend:
-    image: umaimaba/ecredit-backend:${IMAGE_TAG:-latest}
+    image: oumaimaba/ecredit-backend:${IMAGE_TAG:-latest}
     container_name: ecredit-backend-app
     ports:
-      - "8085:8080"        # Port exposé pour le backend
+      - "8085:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
       SERVER_PORT: 8080
     networks:
       - ecredit-network
     restart: unless-stopped
+
+  # Jenkins
+  jenkins:
+    image: jenkins/jenkins:lts
+    container_name: docker_jenkins_1
+    user: root
+    ports:
+      - "8082:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker:ro
+    environment:
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - ecredit-network
+
+  # Nexus
+  nexus:
+    image: sonatype/nexus3
+    container_name: nexus
+    ports:
+      - "8081:8081"
+    volumes:
+      - nexus-data:/nexus-data
+    networks:
+      - ecredit-network
+
+  # SonarQube
+  sonarqube:
+    image: sonarqube:latest
+    container_name: sonarqube
+    ports:
+      - "9000:9000"
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqube-db:5432/sonar
+      - SONAR_JDBC_USERNAME=sonar
+      - SONAR_JDBC_PASSWORD=sonar
+    depends_on:
+      - sonarqube-db
+    networks:
+      - ecredit-network
+
+  # PostgreSQL pour SonarQube
+  sonarqube-db:
+    image: postgres:15
+    container_name: sonarqube-database
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+      - POSTGRES_DB=sonar
+    volumes:
+      - sonarqube-db-data:/var/lib/postgresql/data
+    networks:
+      - ecredit-network
 
   # Prometheus
   prometheus:
@@ -21,7 +76,7 @@ services:
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
-      - "9090:9090"        # Port pour accéder à Prometheus
+      - "9090:9090"
     networks:
       - ecredit-network
     restart: unless-stopped
@@ -31,12 +86,17 @@ services:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3000:3000"        # Port pour accéder à Grafana
+      - "3000:3000"
     networks:
       - ecredit-network
     depends_on:
       - prometheus
     restart: unless-stopped
+
+volumes:
+  jenkins_home:
+  nexus-data:
+  sonarqube-db-data:
 
 networks:
   ecredit-network:
