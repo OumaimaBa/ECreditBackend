@@ -2,28 +2,8 @@ version: "3.8"
 
 services:
   # ============================================
-  # APPLICATION (OBLIGATOIRE)
+  # APPLICATION SPRING BOOT (avec H2 embarquée)
   # ============================================
-  
-  mysql:
-    image: mysql:8.0
-    container_name: mysql-ecredit
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpass
-      - MYSQL_DATABASE=ecredit
-      - MYSQL_USER=ecredituser
-      - MYSQL_PASSWORD=ecreditpass
-    volumes:
-      - mysql-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-    networks:
-      - ecredit-network
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   ecredit-backend:
     build:
@@ -31,22 +11,19 @@ services:
       dockerfile: Dockerfile
     image: umaimaba/ecredit-backend:latest
     container_name: ecredit-backend-app
-    depends_on:
-      - mysql
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql-ecredit:3306/ecredit
-      - SPRING_DATASOURCE_USERNAME=ecredituser
-      - SPRING_DATASOURCE_PASSWORD=ecreditpass
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     ports:
       - "8085:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=default
+      - SERVER_PORT=8080
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   # ============================================
   # MONITORING (OBLIGATOIRE)
   # ============================================
-  
+
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
@@ -56,6 +33,7 @@ services:
       - "9090:9090"
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana:latest
@@ -68,9 +46,7 @@ services:
       - ecredit-network
     depends_on:
       - prometheus
-
-volumes:
-  mysql-data:
+    restart: unless-stopped
 
 networks:
   ecredit-network:
