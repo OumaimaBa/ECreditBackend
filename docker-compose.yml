@@ -1,13 +1,19 @@
+version: "3.8"
+
 services:
   # Application Spring Boot
   ecredit-backend:
-    image: oumaimaba/ecredit-backend:${IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: ecredit-backend-app
     ports:
       - "8085:8080"
     environment:
       SPRING_PROFILES_ACTIVE: default
       SERVER_PORT: 8080
+    volumes:
+      - ./src/main/resources/application.properties:/app/config/application.properties:ro
     networks:
       - ecredit-network
     restart: unless-stopped
@@ -29,6 +35,7 @@ services:
       - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   # Nexus
   nexus:
@@ -40,6 +47,7 @@ services:
       - nexus-data:/nexus-data
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   # SonarQube
   sonarqube:
@@ -55,6 +63,7 @@ services:
       - sonarqube-db
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   # PostgreSQL pour SonarQube
   sonarqube-db:
@@ -68,6 +77,7 @@ services:
       - sonarqube-db-data:/var/lib/postgresql/data
     networks:
       - ecredit-network
+    restart: unless-stopped
 
   # Prometheus
   prometheus:
